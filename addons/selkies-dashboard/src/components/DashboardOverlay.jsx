@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 import Sidebar from './Sidebar';
 import '../styles/Overlay.css';
+import '../styles/fduplex-customizations.css';  // fduplex: Hide screen settings controls
 
 function DashboardOverlay({ container }) {
 
