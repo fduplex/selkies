@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import GamepadVisualizer from "./GamepadVisualizer";
 import { getTranslator } from "../translations";
 import yaml from "js-yaml";
+import DemosLogo from '../assets/logo.svg';  // fduplex: Custom demOS logo
 
 // --- Constants ---
 const urlHash = window.location.hash;
@@ -2144,22 +2145,16 @@ function Sidebar() {
       })()}
       <div className={sidebarClasses}>
           <div className="sidebar-header">
+            {/* fduplex: Custom demOS logo (no link, replaces title) */}
             {uiShowLogo && (
-              <a
-                href="https://github.com/selkies-project/selkies"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <SelkiesLogo width={30} height={30} t={t} />
-              </a>
+              <img 
+                src={DemosLogo} 
+                alt="demOS" 
+                className="demos-logo"
+              />
             )}
-            <a
-              href="https://github.com/selkies-project/selkies"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <h2>{uiTitle}</h2>
-            </a>
+            {/* fduplex: Title hidden via CSS, kept for env var compatibility */}
+            <h2 className="sidebar-title">{uiTitle}</h2>
             <div className="header-controls">
             <div
               className={`theme-toggle ${theme}`}

@@ -34,3 +34,23 @@
 .sidebar-section-content > button.resolution-button.toggle-button {
     display: none !important;
 }
+
+/* ==========================================================================
+   fduplex: Header customizations
+   ========================================================================== */
+
+/* Hide light/dark theme toggle - force dark mode */
+.theme-toggle {
+    display: none !important;
+}
+
+/* Hide title text (using custom logo instead) */
+.sidebar-header h2 {
+    display: none !important;
+}
+
+/* Custom logo styling - rectangular, height 30px */
+.demos-logo {
+    height: 30px;
+    width: auto;
+}
