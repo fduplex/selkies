@@ -49,8 +49,25 @@
     display: none !important;
 }
 
-/* Custom logo styling - rectangular, height 30px */
+/* Custom logo styling - maintain aspect ratio */
 .demos-logo {
     height: 30px;
     width: auto;
+    object-fit: contain;
+}
+
+/* ==========================================================================
+   fduplex: Section title color
+   ========================================================================== */
+
+.sidebar h3 {
+    color: rgb(220, 220, 220) !important;
+}
+
+/* ==========================================================================
+   fduplex: Sidebar toggle handle - match demOS logo yellow
+   ========================================================================== */
+
+.toggle-indicator {
+    background-color: #ffc300 !important;
 }
