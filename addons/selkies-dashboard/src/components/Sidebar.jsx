@@ -531,6 +531,35 @@ function Sidebar() {
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
   };
+  
+  // fduplex: Auto-close sidebar when mouse leaves
+  const closeTimeoutRef = useRef(null);
+  
+  const handleSidebarMouseLeave = () => {
+    if (isOpen) {
+      closeTimeoutRef.current = setTimeout(() => {
+        setIsOpen(false);
+      }, 200); // 200ms delay before closing
+    }
+  };
+  
+  const handleSidebarMouseEnter = () => {
+    // Cancel pending close if mouse re-enters sidebar
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+  };
+  
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current) {
+        clearTimeout(closeTimeoutRef.current);
+      }
+    };
+  }, []);
+  
   const isSecondaryDisplay = displayId === 'display2';
   const [langCode, setLangCode] = useState("en");
   const [translator, setTranslator] = useState(() => getTranslator("en"));
@@ -2143,7 +2172,11 @@ function Sidebar() {
           </div>
         );
       })()}
-      <div className={sidebarClasses}>
+      <div 
+        className={sidebarClasses}
+        onMouseLeave={handleSidebarMouseLeave}
+        onMouseEnter={handleSidebarMouseEnter}
+      >
           <div className="sidebar-header">
             {/* fduplex: Custom demOS logo (no link, replaces title) */}
             {uiShowLogo && (
