@@ -75,7 +75,9 @@ let handleResizeUI_globalRef = null;
 let vncStripeDecoders = {};
 let wakeLockSentinel = null;
 let currentEncoderMode = 'x264enc-stiped';
-let useCssScaling = false;
+let useCssScaling = true;
+let useCssScalingLocked = false;
+let useCssScalingServerValue = true;
 let trackpadMode = false;
 let scalingDPI = 96;
 let antiAliasingEnabled = true;
@@ -375,7 +377,9 @@ currentEncoderMode = getStringParam('encoder', 'x264enc');
 scaleLocallyManual = getBoolParam('scaleLocallyManual', true);
 is_manual_resolution_mode = getBoolParam('is_manual_resolution_mode', false);
 isGamepadEnabled = getBoolParam('isGamepadEnabled', true);
-useCssScaling = getBoolParam('useCssScaling', false);
+// Persist/read under the server setting's own key ('use_css_scaling') so the server value,
+// the ingestion loop, and this pixel-path variable all agree. Default true = HiDPI OFF.
+useCssScaling = getBoolParam('use_css_scaling', true);
 trackpadMode = getBoolParam('trackpadMode', false);
 if (getStringParam('scaling_dpi', null) === null) {
   const dpr = window.devicePixelRatio || 1;
@@ -1504,10 +1508,13 @@ function receiveMessage(event) {
       break;
     case 'setUseCssScaling':
       if (typeof message.value === 'boolean') {
-        const changed = useCssScaling !== message.value;
-        useCssScaling = message.value;
-        setBoolParam('useCssScaling', useCssScaling);
-        console.log(`Set useCssScaling to ${useCssScaling} and persisted.`);
+        // When the server locks use_css_scaling, the locked value always wins over a client
+        // toggle or stale localStorage, so HiDPI can only be changed server-side.
+        const desiredValue = useCssScalingLocked ? useCssScalingServerValue : message.value;
+        const changed = useCssScaling !== desiredValue;
+        useCssScaling = desiredValue;
+        setBoolParam('use_css_scaling', useCssScaling);
+        console.log(`Set useCssScaling to ${useCssScaling} (locked=${useCssScalingLocked}) and persisted.`);
 
         if (window.webrtcInput && typeof window.webrtcInput.updateCssScaling === 'function') {
           window.webrtcInput.updateCssScaling(useCssScaling);
@@ -3402,6 +3409,14 @@ function handleDecodedFrame(frame) {
                   return;
               }
               const changes = sanitizeAndStoreSettings(obj.settings);
+              // Authoritatively apply the server's use_css_scaling (value + locked) to the pixel
+              // path on every connect: repairs stale/mismatched localStorage and enforces the lock,
+              // regardless of what the client previously had stored.
+              if (obj.settings && obj.settings.use_css_scaling) {
+                  useCssScalingLocked = obj.settings.use_css_scaling.locked === true;
+                  useCssScalingServerValue = !!obj.settings.use_css_scaling.value;
+                  receiveMessage({ origin: window.location.origin, data: { type: 'setUseCssScaling', value: useCssScalingServerValue } });
+              }
               window.postMessage({ type: 'serverSettings', payload: obj.settings }, window.location.origin);
               if (Object.keys(changes).length > 0) {
                   console.log('Client settings were sanitized by server rules. Sending updates back to server:', changes);

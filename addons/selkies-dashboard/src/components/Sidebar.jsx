@@ -647,7 +647,7 @@ function Sidebar() {
     newRenderable.video_bitrate = isRenderable('video_bitrate');
     newRenderable.audio_bitrate = isRenderable('audio_bitrate');
     
-    const hypotheticalHidpi = s.hidpi_enabled || { value: true, locked: false };
+    const hypotheticalHidpi = s.use_css_scaling || { value: true, locked: false };
     newRenderable.hidpi = hypotheticalHidpi.locked !== true;
 
     newRenderable.enableSharing = s.enable_sharing?.value ?? true;
