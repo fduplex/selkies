@@ -151,61 +151,14 @@ def generate_xrandr_gtf_modeline(res):
 
 
 def set_dpi(dpi):
-    """Set XFCE Window Scaling Factor based on DPI value.
-
-    MODIFIED (fduplex): Sets /Gdk/WindowScalingFactor instead of /Xft/DPI
-    for proper integer scaling (1x or 2x) rather than font DPI manipulation.
-    This provides uniform UI scaling across all elements in XFCE.
-    """
     if which('xfconf-query'):
-        # Convert DPI to scale factor (DPI >= 144 → 2x, else 1x)
-        scale = 2 if dpi >= 144 else 1
-        logger.info(f'XFCE: Converting DPI {dpi} to Window Scaling Factor {scale}x')
-
-        # Set Window Scaling Factor instead of Font DPI
-        cmd = [
-            'xfconf-query',
-            '-c',
-            'xsettings',
-            '-p',
-            '/Gdk/WindowScalingFactor',
-            '-s',
-            str(scale),
-            '--create',
-            '-t',
-            'int',
-        ]
+        # Set window scale
+        cmd = ['xfconf-query', '-c', 'xsettings', '-p', '/Xft/DPI', '-s', str(dpi), '--create', '-t', 'int']
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = p.communicate()
         if p.returncode != 0:
-            logger.error("failed to set XFCE Window Scaling to '%d': %s%s" % (scale, str(stdout), str(stderr)))
+            logger.error("failed to set XFCE DPI to: '%d': %s%s" % (dpi, str(stdout), str(stderr)))
             return False
-        logger.info(f'Set XFCE Window Scaling Factor to {scale}x')
-
-        # Set window manager theme for proper HiDPI decorations
-        theme = 'Default-xhdpi' if scale == 2 else 'Default'
-        cmd_theme = ['xfconf-query', '-c', 'xfwm4', '-p', '/general/theme', '-s', theme]
-        p = subprocess.Popen(cmd_theme, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        p.communicate()
-        logger.info(f'Set xfwm4 theme to {theme}')
-
-        # Cursor size is handled by set_cursor_size(), but set a sensible default
-        cursor_size = 48 if scale == 2 else 24
-        cmd_cursor = [
-            'xfconf-query',
-            '-c',
-            'xsettings',
-            '-p',
-            '/Gtk/CursorThemeSize',
-            '-s',
-            str(cursor_size),
-            '--create',
-            '-t',
-            'int',
-        ]
-        p = subprocess.Popen(cmd_cursor, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        p.communicate()
-        logger.info(f'Set cursor size to {cursor_size}')
     else:
         logger.warning('failed to find supported window manager to set DPI.')
         return False

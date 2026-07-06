@@ -1,39 +1,10 @@
 /* ==========================================================================
    fduplex customizations for demOS console
-   
-   Hide Screen Settings controls - keep only HiDPI toggle and UI Scaling dropdown.
-   All hidden controls retain their functionality; only the UI is hidden.
+
+   The entire Screen Settings section is hidden server-side via
+   SELKIES_UI_SIDEBAR_SHOW_SCREEN_SETTINGS="false|locked", so no per-control
+   hide rules are needed here.
    ========================================================================== */
-
-/* Hide Anti-aliasing toggle (parent div) */
-.dev-setting-item.toggle-item:has(#antiAliasingToggle) {
-    display: none !important;
-}
-
-/* Hide Use CSS cursors toggle (parent div) */
-.dev-setting-item.toggle-item:has(#useBrowserCursorsToggle) {
-    display: none !important;
-}
-
-/* Hide Resolution Preset dropdown (parent div) */
-.dev-setting-item:has(#resolutionPresetSelect) {
-    display: none !important;
-}
-
-/* Hide Width/Height inputs container */
-.resolution-manual-inputs {
-    display: none !important;
-}
-
-/* Hide Set/Reset buttons container */
-.resolution-action-buttons {
-    display: none !important;
-}
-
-/* Hide Scale Locally toggle button */
-.sidebar-section-content > button.resolution-button.toggle-button {
-    display: none !important;
-}
 
 /* ==========================================================================
    fduplex: Header customizations

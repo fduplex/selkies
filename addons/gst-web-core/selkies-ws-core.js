@@ -381,14 +381,10 @@ isGamepadEnabled = getBoolParam('isGamepadEnabled', true);
 // the ingestion loop, and this pixel-path variable all agree. Default true = HiDPI OFF.
 useCssScaling = getBoolParam('use_css_scaling', true);
 trackpadMode = getBoolParam('trackpadMode', false);
-if (getStringParam('scaling_dpi', null) === null) {
-  const dpr = window.devicePixelRatio || 1;
-  const target = Math.round(dpr * 4) * 24;
-  const presets = [120, 144, 168, 192, 216, 240, 288];
-  scalingDPI = (dpr > 1 && presets.includes(target)) ? target : 96;
-} else {
-  scalingDPI = getIntParam('scaling_dpi', 96);
-}
+// fduplex: UI scaling is hard-locked to 100% (DPI 96). Previously the client
+// derived DPI from window.devicePixelRatio, which scaled HiDPI/retina clients
+// to 200% by default. Always use 96 regardless of device or any stored value.
+scalingDPI = 96;
 antiAliasingEnabled = getBoolParam('antiAliasingEnabled', true);
 use_browser_cursors = getBoolParam('use_browser_cursors', false);
 if (displayId === 'display2') {

@@ -518,14 +518,9 @@ async def _get_xfce_session_env(logger):
 
 
 async def _run_xfconf(dpi_value, logger):
-    """Helper function to apply Window Scaling via xfconf-query for XFCE.
-
-    MODIFIED (fduplex): Sets /Gdk/WindowScalingFactor instead of /Xft/DPI
-    for proper integer scaling (1x or 2x) rather than font DPI manipulation.
-    This provides uniform UI scaling across all elements in XFCE.
-    """
+    """Helper function to apply DPI via xfconf-query for XFCE."""
     if not which('xfconf-query'):
-        logger.debug('xfconf-query not found. Skipping XFCE scaling via xfconf-query.')
+        logger.debug('xfconf-query not found. Skipping XFCE DPI setting via xfconf-query.')
         return False
 
     session_env = await _get_xfce_session_env(logger)
@@ -533,13 +528,6 @@ async def _run_xfconf(dpi_value, logger):
         logger.info('Found active XFCE session environment. Commands will be executed within this context.')
     else:
         logger.warning('Could not obtain XFCE session environment. Falling back to direct execution.')
-
-    # Convert DPI to integer scale factor
-    # DPI >= 144 (1.5x) → use 2x integer scaling
-    # DPI < 144 → use 1x scaling
-    scale = 2 if dpi_value >= 144 else 1
-
-    logger.info(f'XFCE: Converting DPI {dpi_value} to Window Scaling Factor {scale}x')
 
     async def run_command(cmd, success_msg, failure_msg):
         try:
@@ -557,30 +545,27 @@ async def _run_xfconf(dpi_value, logger):
             logger.error(f"Error running command '{' '.join(cmd)}': {e}")
             return False
 
-    # Set Window Scaling Factor instead of Font DPI
-    cmd_scale = [
+    cmd_dpi = [
         'xfconf-query',
         '-c',
         'xsettings',
         '-p',
-        '/Gdk/WindowScalingFactor',
+        '/Xft/DPI',
         '-s',
-        str(scale),
+        str(dpi_value),
         '--create',
         '-t',
         'int',
     ]
-    if not await run_command(cmd_scale, f'Set XFCE Window Scaling to {scale}x', 'Failed to set XFCE Window Scaling'):
+    if not await run_command(
+        cmd_dpi,
+        f'Successfully set XFCE DPI to {dpi_value} using xfconf-query.',
+        'Failed to set XFCE DPI using xfconf-query',
+    ):
         return False
 
-    # Set window manager theme for proper HiDPI decorations
-    theme = 'Default-xhdpi' if scale == 2 else 'Default'
-    cmd_theme = ['xfconf-query', '-c', 'xfwm4', '-p', '/general/theme', '-s', theme]
-    await run_command(cmd_theme, f'Set xfwm4 theme to {theme}', 'Failed to set xfwm4 theme')
-
-    # Set cursor size based on scale (not DPI)
-    cursor_size = 48 if scale == 2 else 24
-    logger.info(f'Attempting to set cursor size to: {cursor_size} (based on scale {scale}x)')
+    cursor_size = int(round(dpi_value / 96 * 32))
+    logger.info(f'Attempting to set cursor size to: {cursor_size} (based on DPI {dpi_value})')
     cmd_cursor = [
         'xfconf-query',
         '-c',
